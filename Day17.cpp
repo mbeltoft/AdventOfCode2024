@@ -6,10 +6,6 @@
 #include <thread>
 #include <mutex>
 
-//uint64_t register_A = 0;
-//uint64_t register_B = 0;
-//uint64_t register_C = 0;
-
 uint64_t Combo(uint64_t operand, uint64_t regA, uint64_t regB, uint64_t regC)
 {
     uint64_t number = 0;
@@ -37,33 +33,23 @@ std::vector<unsigned int> Run3bitComputer(uint64_t &regA, uint64_t &regB, uint64
 {
     // 3 bit computer with 3 registers and 7 opcodes
 
-    //register_A = regA;
-    //register_B = regB;
-    //register_C = regC;
     size_t instruction_pointer = 0;
     std::vector<unsigned int> output;
 
     while (instruction_pointer < program.size()) {
         int opcode = program[instruction_pointer];
         int operand = program[instruction_pointer + 1];
-        uint64_t result = 0;
         bool jump = false;
 
         switch (opcode) {
             case 0: // adv - division with register A and combo operand
-                result = regA / (1 << Combo(operand, regA, regB, regC));
-                regA = result;
-                //std::cout << "0 A:" << result << std::endl;
+                regA = regA / (1 << Combo(operand, regA, regB, regC));
                 break;
             case 1: // bxl - bitwise XOR of register B and operand
-                result = regB ^ operand;
-                regB = result;
-                //std::cout << "1 B:" << result << std::endl;
+                regB = regB ^ operand;
                 break;
             case 2: // bst - combo operand
-                result = Combo(operand, regA, regB, regC) % 8;
-                regB = result;
-                //std::cout << "2 B:" << result << std::endl;
+                regB = Combo(operand, regA, regB, regC) % 8;
                 break;
             case 3: // jnz - jump not zero in register A
                 if (regA != 0) {
@@ -72,24 +58,16 @@ std::vector<unsigned int> Run3bitComputer(uint64_t &regA, uint64_t &regB, uint64
                 }
                 break;
             case 4: // bxc - bitwise XOR of register B and register C
-                result = regB ^ regC;
-                regB = result;
-                //std::cout << "4 B:" << result << std::endl;
+                regB = regB ^ regC;
                 break;
             case 5: // out - calculate value of combo operand and outputs it
                 output.push_back(Combo(operand, regA, regB, regC) % 8);
                 break;
             case 6: // bdv - same as adv but store in register B
-                result = regA / (1 << Combo(operand, regA, regB, regC));
-                regB = result;
-                //std::cout << "6 B:" << result << std::endl;
+                regB = regA / (1 << Combo(operand, regA, regB, regC));
                 break;
             case 7: // cdv - same as adv but store in register C
-                //std::cout << "7 A:" << register_A << " C:" << register_C << " Combo:" << Combo(operand) << " Operand:" << operand << std::endl;
-                //std::cout << "Divisor: " << (1 << Combo(operand)) << std::endl;
-                result = regA / (1 << Combo(operand, regA, regB, regC));
-                regC = result;
-                //std::cout << "7 C:" << result << std::endl;
+                regC = regA / (1 << Combo(operand, regA, regB, regC));
                 break;
         }
         if (!jump) {
@@ -176,7 +154,7 @@ bool search(uint64_t &min, uint64_t &max)
     uint64_t regB = 0;
     uint64_t regC = 0;
     std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
-    uint64_t program_num = 2412754713550330;
+    uint64_t program_num = 2412754713550330LL;
     std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
     // Convert vector to number
     bool overflow = output.size() > 64;
@@ -277,10 +255,6 @@ void Part2Job(int thread_num, int64_t min, int64_t max)
             displayed = false;
         }
 
-        //if ((i % 1000000L) == 0) {
-        //    std::cout << i << std::endl;
-        //}
-        //std::cout << "Trying register A = " << i << std::endl;
         uint64_t regA = i;
         uint64_t regB = 0;
         uint64_t regC = 0;
@@ -302,7 +276,6 @@ void Part2Job(int thread_num, int64_t min, int64_t max)
             break;
         }
     }
-    //
 }
 
 void Part2()
@@ -338,9 +311,9 @@ void Part2()
 void main()
 {
     //Tests();
-    //Part1();
+    Part1();
     //Test1();
     //Test2();
     //Part2();
-    test();
+    //test();
 }

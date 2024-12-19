@@ -6,22 +6,22 @@
 #include <thread>
 #include <mutex>
 
-uint64_t register_A = 0;
-uint64_t register_B = 0;
-uint64_t register_C = 0;
+//uint64_t register_A = 0;
+//uint64_t register_B = 0;
+//uint64_t register_C = 0;
 
-uint64_t Combo(uint64_t operand)
+uint64_t Combo(uint64_t operand, uint64_t regA, uint64_t regB, uint64_t regC)
 {
     uint64_t number = 0;
     switch (operand) {
         case 4:
-            number = register_A;
+            number = regA;
         break;
         case 5:
-            number = register_B;
+            number = regB;
         break;
         case 6:
-            number = register_C;
+            number = regC;
         break;
         case 7:
             std::cout << "Illegal operand" << std::endl;
@@ -33,15 +33,15 @@ uint64_t Combo(uint64_t operand)
     return number;
 }
 
-std::vector<int> Run3bitComputer(uint64_t regA, uint64_t regB, uint64_t regC, std::vector<int> program)
+std::vector<unsigned int> Run3bitComputer(uint64_t &regA, uint64_t &regB, uint64_t &regC, std::vector<unsigned int> program)
 {
     // 3 bit computer with 3 registers and 7 opcodes
 
-    register_A = regA;
-    register_B = regB;
-    register_C = regC;
+    //register_A = regA;
+    //register_B = regB;
+    //register_C = regC;
     size_t instruction_pointer = 0;
-    std::vector<int> output;
+    std::vector<unsigned int> output;
 
     while (instruction_pointer < program.size()) {
         int opcode = program[instruction_pointer];
@@ -51,44 +51,44 @@ std::vector<int> Run3bitComputer(uint64_t regA, uint64_t regB, uint64_t regC, st
 
         switch (opcode) {
             case 0: // adv - division with register A and combo operand
-                result = register_A / (1 << Combo(operand));
-                register_A = result;
+                result = regA / (1 << Combo(operand, regA, regB, regC));
+                regA = result;
                 //std::cout << "0 A:" << result << std::endl;
                 break;
             case 1: // bxl - bitwise XOR of register B and operand
-                result = register_B ^ operand;
-                register_B = result;
+                result = regB ^ operand;
+                regB = result;
                 //std::cout << "1 B:" << result << std::endl;
                 break;
             case 2: // bst - combo operand
-                result = Combo(operand) % 8;
-                register_B = result;
+                result = Combo(operand, regA, regB, regC) % 8;
+                regB = result;
                 //std::cout << "2 B:" << result << std::endl;
                 break;
             case 3: // jnz - jump not zero in register A
-                if (register_A != 0) {
+                if (regA != 0) {
                     instruction_pointer = operand;
                     jump = true;
                 }
                 break;
             case 4: // bxc - bitwise XOR of register B and register C
-                result = register_B ^ register_C;
-                register_B = result;
+                result = regB ^ regC;
+                regB = result;
                 //std::cout << "4 B:" << result << std::endl;
                 break;
             case 5: // out - calculate value of combo operand and outputs it
-                output.push_back(Combo(operand) % 8);
+                output.push_back(Combo(operand, regA, regB, regC) % 8);
                 break;
             case 6: // bdv - same as adv but store in register B
-                result = register_A / (1 << Combo(operand));
-                register_B = result;
+                result = regA / (1 << Combo(operand, regA, regB, regC));
+                regB = result;
                 //std::cout << "6 B:" << result << std::endl;
                 break;
             case 7: // cdv - same as adv but store in register C
                 //std::cout << "7 A:" << register_A << " C:" << register_C << " Combo:" << Combo(operand) << " Operand:" << operand << std::endl;
                 //std::cout << "Divisor: " << (1 << Combo(operand)) << std::endl;
-                result = register_A / (1 << Combo(operand));
-                register_C = result;
+                result = regA / (1 << Combo(operand, regA, regB, regC));
+                regC = result;
                 //std::cout << "7 C:" << result << std::endl;
                 break;
         }
@@ -99,7 +99,7 @@ std::vector<int> Run3bitComputer(uint64_t regA, uint64_t regB, uint64_t regC, st
     return output;
 }
 
-std::string OutputToString(std::vector<int> output)
+std::string OutputToString(std::vector<unsigned int> output)
 {
     std::string result;
     for (auto o : output) {
@@ -110,32 +110,54 @@ std::string OutputToString(std::vector<int> output)
 
 void Tests()
 {
-    std::vector<int> program{2,6};
-    std::vector<int> output = Run3bitComputer(0, 0, 9, program);
-    assert(register_B == 1);
+    uint64_t regA = 0;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
 
+    regA = 0;
+    regB = 0;
+    regC = 9;
+    std::vector<unsigned int> program{2,6};
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
+    assert(regB == 1);
+
+    regA = 10;
+    regB = 0;
+    regC = 0;
     program = {5,0,5,1,5,4};
-    output = Run3bitComputer(10, 0, 0, program);
+    output = Run3bitComputer(regA, regB, regC, program);
     assert(OutputToString(output) == "012");
 
+    regA = 2024;
+    regB = 0;
+    regC = 0;
     program = {0,1,5,4,3,0};
-    output = Run3bitComputer(2024, 0, 0, program);
+    output = Run3bitComputer(regA, regB, regC, program);
     assert(OutputToString(output) == "42567777310");
-    assert(register_A == 0);
+    assert(regA == 0);
 
+    regA = 0;
+    regB = 29;
+    regC = 0;
     program = {1,7};
-    output = Run3bitComputer(0, 29, 0, program);
-    assert(register_B == 26);
+    output = Run3bitComputer(regA, regB, regC, program);
+    assert(regB == 26);
 
+    regA = 0;
+    regB = 2024;
+    regC = 43690;
     program = {4,0};
-    output = Run3bitComputer(0, 2024, 43690, program);
-    assert(register_B == 44354);
+    output = Run3bitComputer(regA, regB, regC, program);
+    assert(regB == 44354);
 }
 
 void Part1()
 {
-    std::vector<int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
-    std::vector<int> output = Run3bitComputer(35200350L, 0, 0, program);
+    uint64_t regA = 35200350L;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
+    std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
     bool first = true;
     for (auto o : output) {
         std::cout << (first ? "" : ",") << o;
@@ -150,9 +172,12 @@ bool search(uint64_t &min, uint64_t &max)
     std::cout << "min: " << min << " max: " << max << std::endl;
     uint64_t mid = (max - min) / 2 + min; // Avoid overflow
     std::cout << "Trying register A = " << mid << std::endl;
-    std::vector<int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
+    uint64_t regA = mid;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
+    std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
     uint64_t program_num = 2412754713550330;
-    std::vector<int> output = Run3bitComputer(mid, 0, 0, program);
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
     // Convert vector to number
     bool overflow = output.size() > 64;
     uint64_t number = 0;
@@ -176,12 +201,27 @@ bool search(uint64_t &min, uint64_t &max)
     }
 }
 
+void Test1()
+{
+    uint64_t regA = 729;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
+    std::vector<unsigned int> program{0,1,5,4,3,0};
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
+    assert(OutputToString(output) == "4635635210");
+    // 4,6,3,5,6,3,5,2,1,0
+}
+
 void test()
 {
     // The answer should be 202356708354602 - but my computer does not agree
+    // My output: 1634151101741554
 
-    std::vector<int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
-    std::vector<int> output = Run3bitComputer(202356708354602L, 0, 0, program);
+    uint64_t regA = 202356708354602LL;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
+    std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
     std::cout << OutputToString(output) << std::endl;
 #if 0
     bool first = true;
@@ -206,8 +246,11 @@ void test()
 void Test2()
 {
     // Program outputs a copy of itself
-    std::vector<int> program{0,3,5,4,3,0};
-    std::vector<int> output = Run3bitComputer(117440, 0, 0, program);
+    uint64_t regA = 117440;
+    uint64_t regB = 0;
+    uint64_t regC = 0;
+    std::vector<unsigned int> program{0,3,5,4,3,0};
+    std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
     assert(OutputToString(output) == "035430");
     // 0,3,5,4,3,0
 }
@@ -218,7 +261,7 @@ int64_t solution = 0;
 void Part2Job(int thread_num, int64_t min, int64_t max)
 {
     //std::cout << "Thread " << thread_num << " running" << std::endl;
-    std::vector<int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
+    std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
     int64_t chunk = max - min;
     bool displayed = false;
     for (int64_t i = min; i < max; i++) {
@@ -238,7 +281,10 @@ void Part2Job(int thread_num, int64_t min, int64_t max)
         //    std::cout << i << std::endl;
         //}
         //std::cout << "Trying register A = " << i << std::endl;
-        std::vector<int> output = Run3bitComputer(i, 0, 0, program);
+        uint64_t regA = i;
+        uint64_t regB = 0;
+        uint64_t regC = 0;
+        std::vector<unsigned int> output = Run3bitComputer(regA, regB, regC, program);
         if (output.size() != program.size()) {
             continue;
         }
@@ -263,10 +309,17 @@ void Part2()
 {
     std::vector<std::thread> threads;
 
+    // This is brutal brute force carried out by 32 threads
+    // It will probably take days to finish
     int num_threads = 32;
+    // Split INT64_MAX into 32 chunks
+    int64_t chunk = (INT64_MAX / 1000000000000LL) / num_threads; // TODO Was INT64_MAX
+    std::cout << "Chunk: " << chunk << std::endl;
+
+    time_t start = time(nullptr);
+
+    // Pass a chunk to each of the threads
     for (int thread_num = 0; thread_num < num_threads; thread_num++) {
-        // Split INT64_MAX into 256 chunks
-        int64_t chunk = INT64_MAX / num_threads; // TODO Was INT64_MAX
         int64_t min = thread_num * chunk;
         int64_t max = (thread_num + 1) * chunk;
         threads.push_back(std::thread(Part2Job, thread_num, min, max));
@@ -276,6 +329,9 @@ void Part2()
         thread.join();
     }
 
+    time_t end = time(nullptr);
+    std::cout << "Time spent: " << (end - start) << " sec" << std::endl;
+
     std::cout << "Solution: " << solution << std::endl;
 }
 
@@ -283,6 +339,8 @@ void main()
 {
     //Tests();
     //Part1();
+    //Test1();
     //Test2();
-    Part2();
+    //Part2();
+    test();
 }

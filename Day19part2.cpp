@@ -4,7 +4,7 @@
 #include <fstream>
 #include <map>
 #include <utility>
-#include <sstream>
+#include <cstdint>
 #include "StringSplit.h"
 
 // https://github.com/mkinkela1/advent-of-code/blob/master/2024/day-19/solution.cpp
@@ -20,8 +20,7 @@ uint64_t WaysToCreate(const std::string& design, const std::vector<std::string>&
     for (int i = 1; i <= n; i++) {
         for (const auto &pattern : patterns) {
             size_t len = pattern.size();
-            if (i >= len && design.substr(i - len, len) == pattern)
-            {
+            if (i >= len && design.substr(i - len, len) == pattern) {
                 dp[i] += dp[i - len];
             }
         }
@@ -33,14 +32,15 @@ uint64_t WaysToCreate(const std::string& design, const std::vector<std::string>&
 void main()
 {
     std::string line;
-    int y = 0;
     std::vector<std::string> patterns;
     std::vector<std::string> designs;
 
     std::ifstream file("input19.txt");
+    // Patterns in first line
     getline(file, line);
     patterns = StringSplit(line, ", ");
     getline(file, line); // Read empty line
+    // Designs in the remaining lines
     while (getline(file, line)) {
         designs.push_back(line);
     }

@@ -1,3 +1,5 @@
+// https://github.com/PaigePalisade/AdventOfCode2024/blob/main/Solutions/day20part1.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -200,17 +200,6 @@ void runDijkstra()
     }
 }
 
-uint64_t solve1()
-{
-    runDijkstra();
-    return bestScore;
-}
-
-uint64_t solve2()
-{
-    return allPaths.size();
-}
-
 void main()
 {
     load("input20test1.txt");

@@ -6,6 +6,8 @@
 #include <thread>
 #include <mutex>
 
+// Try https://github.com/mquig42/AdventOfCode2024/blob/main/src/day17.cpp
+
 uint64_t Combo(uint64_t operand, uint64_t regA, uint64_t regB, uint64_t regC)
 {
     uint64_t number = 0;

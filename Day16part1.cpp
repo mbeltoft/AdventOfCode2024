@@ -38,8 +38,8 @@ public:
     COORD(int _x = 0, int _y = 0) { x = _x, y = _y; }
     COORD(const COORD &coord) { x = coord.x; y = coord.y; }
 };
-COORD startingPoint(1, 0); // Replaced during load
-COORD endingPoint(7, 8); // Replaced during load
+COORD startingPoint(1, 0); // Overwritten during load
+COORD endingPoint(7, 8); // Overwritten during load
 
 void loadMaze()
 {
@@ -128,18 +128,12 @@ bool solve(int x, int y) {
     return false;
 }
 
-long followTheWhiteRabbit()
-{
-
-}
-
 void main() {
     loadMaze();
     printDaMaze();
     if (solve(startingPoint.x, startingPoint.y)) {
         printDaMaze();
         printf("Solved!\n");
-        followTheWhiteRabbit();
     } else {
         printf("Cannot solve. :-(\n");
     }

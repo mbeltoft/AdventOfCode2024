@@ -194,10 +194,10 @@ void Test1()
 
 void test()
 {
-    // The answer should be 202356708354602 - but my computer does not agree
+    // The answer should be 190384113204239 - but my computer does not agree
     // My output: 1634151101741554
 
-    uint64_t regA = 202356708354602LL;
+    uint64_t regA = 190384113204239;
     uint64_t regB = 0;
     uint64_t regC = 0;
     std::vector<unsigned int> program{2,4,1,2,7,5,4,7,1,3,5,5,0,3,3,0};
@@ -313,9 +313,9 @@ void Part2()
 void main()
 {
     //Tests();
-    Part1();
+    //Part1();
     //Test1();
     //Test2();
     //Part2();
-    //test();
+    test();
 }

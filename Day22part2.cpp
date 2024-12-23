@@ -13,28 +13,6 @@
 
 using namespace std::chrono_literals;
 
-#if 0
-inline int64_t Mix(int64_t tmp, int64_t secret)
-{
-    return tmp ^ secret;
-}
-
-inline int64_t Prune(int64_t secret)
-{
-    return secret % 16777216;
-}
-
-inline int64_t NewSecretNumber(int64_t old_secret)
-{
-    int64_t tmp = old_secret * 64;
-    int64_t new_secret = Prune(Mix(tmp, old_secret));
-    tmp = new_secret >> 5; // Divide by 32
-    new_secret = Prune(Mix(tmp, new_secret));
-    tmp = new_secret << 11; // Multiply by 2048
-    new_secret = Prune(Mix(tmp, new_secret));
-    return new_secret;
-}
-#else
 inline int64_t NewSecretNumber(int64_t old_secret)
 {
     int64_t tmp = old_secret * 64;
@@ -45,10 +23,10 @@ inline int64_t NewSecretNumber(int64_t old_secret)
     new_secret = (tmp ^ new_secret) % 16777216;
     return new_secret;
 }
-#endif
 
 typedef std::vector<std::pair<int8_t, int8_t>> PricesAndChanges;
 typedef std::map<int, PricesAndChanges> BuyersPricesAndChanges;
+typedef std::vector<int8_t> sequence;
 
 BuyersPricesAndChanges &CalculatePricesAndChanges(std::vector<int64_t> &buyer_secrets, int iterations)
 {
@@ -76,6 +54,27 @@ BuyersPricesAndChanges &CalculatePricesAndChanges(std::vector<int64_t> &buyer_se
         bpac[b] = pac;
     }
     return bpac;
+}
+
+int HuntSequence(const sequence &seq, const BuyersPricesAndChanges &bpac)
+{
+    int sum = 0;
+    for (const auto &buyer : bpac) {
+        //size_t idx = 0;
+        //int buyer_id = buyer.first;
+        int sequence_tracker = 0;
+        // Find sequence in buyers prices and changes
+        //std::cout << "Size: " << buyer.second.size() << std::endl;
+        for (size_t i = 0; i < buyer.second.size() - 4; i++) {
+            if (buyer.second[i].second == seq[0] && buyer.second[i + 1].second == seq[1] &&
+                buyer.second[i + 2].second == seq[2] && buyer.second[i + 3].second == seq[3]) {
+                sum += buyer.second[i + 3].first;
+                break; // Next buyer // TODO Add break here
+            }
+        }
+    }
+
+    return sum;
 }
 
 void test1()
@@ -109,6 +108,16 @@ void test1()
             }
         }
     }
+
+    sequence seq;
+    seq.push_back(-1);
+    seq.push_back(-1);
+    seq.push_back(0);
+    seq.push_back(2);
+
+    int sum = HuntSequence(seq, bpac);
+    std::cout << "Sum: " << sum << std::endl;
+    // 6
 }
 
 void test2()
@@ -122,35 +131,6 @@ void test2()
     for (auto smth : bpac[0]) {
         std::cout << (int)smth.first << " (" << (int)smth.second << ")" << std::endl;
     }
-}
-
-typedef std::vector<int8_t> sequence;
-
-int HuntSequence(const sequence &seq, const BuyersPricesAndChanges &bpac)
-{
-    int sum = 0;
-    for (const auto &buyer : bpac) {
-        size_t idx = 0;
-        int buyer_id = buyer.first;
-        int sequence_tracker = 0;
-        for (const auto &smth : buyer.second) {
-            //if (sequence_tracker > 2)
-            //    std::cout << "Change: " << (int)smth.second << " seqence index: " << sequence_tracker << " sequence: " << (int)sequence[sequence_tracker] << std::endl;
-            if (smth.second == seq[sequence_tracker]) {
-                sequence_tracker++;
-            } else {
-                sequence_tracker = 0;
-            }
-            if (sequence_tracker == seq.size()) {
-                //std::cout << "Buyer " << buyer_id << " bought at idx: " << idx << " price: " << (int)smth.first << std::endl;
-                sum += smth.first;
-                break;
-            }
-            idx++;
-        }
-    }
-
-    return sum;
 }
 
 void test3()
@@ -183,7 +163,6 @@ bool sequence_compare(const sequence& a, const sequence& b)
     }
     return true;
 }
-
 
 class ThreadPool
 {
@@ -247,7 +226,7 @@ std::mutex g_mutex;
 void main()
 {
     std::vector<int64_t> buyer_secrets;
-    std::fstream file("input21.txt");
+    std::fstream file("input22.txt");
     std::string line;
 
     while (std::getline(file, line)) {
@@ -261,10 +240,6 @@ void main()
     std::cout << "Done calculating Prices and Ranges for all buyers" << std::endl;
 
     std::vector<sequence> sequence_candidates;
-
-    int max_search = 10 * bpac.size() * 2000;
-    int search_idx = 0;
-    int old_percentage = 0;
 
     for (int target_price = 9; target_price > 6; target_price--) {
         // Find sequences that hit target_price
@@ -312,32 +287,5 @@ void main()
         std::this_thread::sleep_for(1s);
     }
     pool.stop_processing();
-
-#if 0
-    // Run through all sequences and track the best overall sum
-    int max_sum = 0;
-    int idx = 0;
-    old_percentage = 0;
-    for (const auto &seq : sequence_candidates) {
-        int sum = HuntSequence(seq, bpac);
-        if (sum > max_sum) {
-            max_sum = sum;
-
-            std::cout << "Sequence: ";
-            for (size_t x = 0; x < seq.size(); x++) {
-                std::cout << (int)seq[x] << " ";
-            }
-            std::cout << " sum: " << sum << std::endl;
-        }
-        idx++;
-        if (idx % 100 == 0)
-            std::cout << idx << std::endl;
-        int percentage = 100 * idx / sequence_candidates.size();
-        if (percentage != old_percentage) {
-            old_percentage = percentage;
-            std::cout << "Hunt progress: " << percentage << "%" << std::endl;
-        }
-    }
-    std::cout << "Sum: " << max_sum << std::endl;
-#endif
+    // 1968
 }

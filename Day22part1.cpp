@@ -67,7 +67,7 @@ void test2()
 void main()
 {
     std::vector<int64_t> buyer_secrets;
-    std::fstream file("input21.txt");
+    std::fstream file("input22.txt");
     std::string line;
 
     while (std::getline(file, line)) {

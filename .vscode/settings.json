@@ -75,6 +75,8 @@
         "set": "cpp",
         "bitset": "cpp",
         "unordered_set": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "forward_list": "cpp"
     }
 }

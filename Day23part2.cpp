@@ -9,8 +9,8 @@
 
 void main()
 {
-    std::map<std::string,std::set<std::string>> adj;
-    std::set<std::string> computers;
+    std::map<std::string,std::set<std::string>> adj; // key is computer, value is it's connections
+    std::set<std::string> computers; // std::set to avoid duplicates
     std::string s;
     
     std::ifstream ifs("input23.txt");
@@ -23,23 +23,29 @@ void main()
         adj[u].insert(v); // These two computers are connected
         adj[v].insert(u); // These two computers are connected
     }
+    // Put computers into vector to sort them
     std::vector<std::string> v;
     for (auto &i : computers) {
         v.push_back(i);
     }
     std::cout << "Computers: " << v.size() << std::endl;
     std::sort(v.begin(), v.end());
-    //find maximal clique
+    // Find max linked bunch of computers
     for(size_t i=0; i < v.size(); i++) {
         for(size_t j = i+1; j < v.size(); j++) {
+            // 'i and j' must be connected
             if (adj[v[i]].find(v[j]) == adj[v[i]].end()) {
                 continue;
             }
+            // Bring next computer into play
             for(size_t k = j+1; k < v.size(); k++) {
+                // 'i and k' and 'j and k' must be connected
                 if (adj[v[i]].find(v[k]) == adj[v[i]].end() || adj[v[j]].find(v[k]) == adj[v[j]].end()) {
                     continue;
                 }
+                // Bring next computer into play
                 for(size_t l = k+1; l < v.size(); l++) {
+                    // 'i and l' and 'j and l' and 'k and l' must be connected
                     if (adj[v[i]].find(v[l]) == adj[v[i]].end() || adj[v[j]].find(v[l]) == adj[v[j]].end() || adj[v[k]].find(v[l]) == adj[v[k]].end()) {
                         continue;
                     }

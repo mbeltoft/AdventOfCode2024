@@ -1,100 +1,95 @@
-// https://github.com/PaigePalisade/AdventOfCode2024/blob/main/Solutions/day20part1.c
+#include <string>
+#include <iostream>
+#include <fstream>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define FILE_NAME "input20.txt"
-// "input20test1.txt"
+#define FILENAME "input20.txt"
+//#define FILENAME "input20test1.txt"
 #define SIZE 141
-// 15
+//#define SIZE 15
 #define CUTOFF 100
-// 1
+//#define CUTOFF 1
 
 int main() {
-    FILE* f = fopen(FILE_NAME, "r");
-    
-    // start row, column
-    int sr;
-    int sc;
+    // Start column, row
+    int sc = 0;
+    int sr = 0;
 
-    // end row, column
-    int er;
-    int ec;
+    // End column, row
+    int ec = 0;
+    int er = 0;
 
     char map[SIZE][SIZE];
-    int dist[SIZE][SIZE];
+    int dist[SIZE][SIZE]; // Distance (number of steps) from start
 
-    for (int r = 0; r < SIZE; r++) {
-        for (int c = 0; c < SIZE; c++) {
-            fscanf(f, "%c ", &map[r][c]);
-            dist[r][c] = -1;
-            if (map[r][c] == 'S') {
+    std::fstream file(FILENAME);
+    std::string line;
+    int r = 0;
+    while (std::getline(file, line)) {
+        for (size_t c = 0; c < line.size(); c++) {
+            dist[c][r] = -1;
+            map[c][r] = line[c];
+            if (map[c][r] == 'S') {
                 sr = r;
                 sc = c;
             }
-            if (map[r][c] == 'E') {
+            if (map[c][r] == 'E') {
                 er = r;
                 ec = c;
             }
         }
+        r++;
     }
 
-    int r = sr;
     int c = sc;
+    r = sr;
     int d = 0;
 
-    // map is guaranteed to not have forks, pathfinding is not required, just go forward
-    while (r != er || c != ec) {
-        dist[r][c] = d;
-        if (r-1 >= 0 && map[r-1][c] != '#' && dist[r-1][c] == -1) {
-            r--;
+    // Map is guaranteed to not have forks, pathfinding is not required, just go forward avoiding walls
+    while (c != ec || r != er) {
+        dist[c][r] = d;
+        if (r - 1 >= 0 && map[c][r - 1] != '#' && dist[c][r - 1] == -1) {
+            r--; // Go left
         }
-        else if (c+1 < SIZE && map[r][c+1] != '#' && dist[r][c+1] == -1) {
-            c++;
+        else if (c + 1 < SIZE && map[c + 1][r] != '#' && dist[c + 1][r] == -1) {
+            c++; // Go down
         }
-        else if (r+1 < SIZE && map[r+1][c] != '#' && dist[r+1][c] == -1) {
-            r++;
+        else if (r + 1 < SIZE && map[c][r + 1] != '#' && dist[c][r + 1] == -1) {
+            r++; // Go right
         }
-        else if (c-1 >= 0 && map[r][c-1] != '#' && dist[r][c-1] == -1) {
-            c--;
+        else if (c - 1 >= 0 && map[c - 1][r] != '#' && dist[c - 1][r] == -1) {
+            c--; // Go up
         }
-        d++;
+        d++; // One step further away from start
     }
-    dist[er][ec] = d;
+    dist[ec][er] = d;
+    // dist now contains the route walked with increasing numbers towards the end
     //printf("Dist: %d\n", d);
 
-    int numCheats = 0;
-
-    // check for cheats
-    // a cheat is a .#. pattern horizontally or vertically where . can also be S or E
-    for (int r = 0; r < SIZE; r++) {
-        for (int c = 0; c < SIZE; c++) {
-            if (c+2 < SIZE && map[r][c] != '#' && map[r][c+1] == '#' && map[r][c+2] != '#') {
+    // Check for cheats
+    // A cheat is a .#. pattern horizontally or vertically where . can also be S or E
+    int num_cheats = 0;
+    for (int c = 0; c < SIZE; c++) {
+        for (int r = 0; r < SIZE; r++) {
+            // Search down
+            if (c + 2 < SIZE && map[c][r] != '#' && map[c + 1][r] == '#' && map[c + 2][r] != '#') {
                 int saved;
-                if (dist[r][c] < dist[r][c+2]) {
-                    saved = dist[r][c+2] - (dist[r][c] + 2);
-                }
-                else {
-                    saved = dist[r][c] - (dist[r][c+2] + 2);
-                }
+                // What's the distance saved if cheat was used?
+                saved = abs(dist[c + 2][r] - dist[c][r]) - 2; // 2 for walking the cheat
                 if (saved >= CUTOFF) {
-                    numCheats ++;
+                    num_cheats++;
                 }
             }
-            if (r+2 < SIZE && map[r][c] != '#' && map[r+1][c] == '#' && map[r+2][c] != '#') {
+            // Search right
+            if (r + 2 < SIZE && map[c][r] != '#' && map[c][r + 1] == '#' && map[c][r + 2] != '#') {
                 int saved;
-                if (dist[r][c] < dist[r+2][c]) {
-                    saved = dist[r+2][c] - (dist[r][c] + 2);
-                }
-                else {
-                    saved = dist[r][c] - (dist[r+2][c] + 2);
-                }
+                // What's the distance saved if cheat was used?
+                saved = abs(dist[c][r + 2] - dist[c][r]) - 2; // 2 for walking the cheat
                 if (saved >= CUTOFF) {
-                    numCheats ++;
+                    num_cheats++;
                 }
             }
         }
     }
-    printf("Number of cheats that would save 100 or more: %d\n", numCheats);
+    std::cout << "Number of cheats that would save " << CUTOFF << " or more: " << num_cheats << std::endl;
+    // 1463
 }
